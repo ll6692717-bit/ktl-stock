@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import ThreadList from './ThreadList';
 import SiteHeader from '@/app/components/SiteHeader';
 import SiteFooter from '@/app/components/SiteFooter';
 
@@ -116,8 +115,7 @@ export default async function ProductDetail({
               ＋ 新しい店舗スレッドを作成
             </a>
           </div>
-
-          <ThreadList productId={productId} threads={safeThreads} />
+          
         </section>
       </div>
 
