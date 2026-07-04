@@ -43,12 +43,11 @@ export default async function ThreadDetailPage({
     .eq('is_visible', true)
     .maybeSingle();
 
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('id, stock_status, comment, nickname, created_at, is_visible')
-    .eq('thread_id', threadId)
-    .or('is_visible.eq.true,is_visible.is.null')
-    .order('created_at', { ascending: false });
+const { data: posts, error: postsError } = await supabase
+  .from('posts')
+  .select('id, stock_status, comment, nickname, created_at, is_visible')
+  .eq('thread_id', threadId)
+  .order('created_at', { ascending: false });
 
   if (!thread) {
     return (
