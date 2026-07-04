@@ -92,7 +92,7 @@ const { data: posts, error: postsError } = await supabase
             奇天烈軍 販売状況共有
           </h1>
           <p className="mt-2 text-sm">
-            店舗ごとの在庫情報を投稿・確認できます。
+            店舗ごとの在庫情報を投稿・確認できます。投稿後、リロードしてください。
           </p>
         </div>
       </header>
