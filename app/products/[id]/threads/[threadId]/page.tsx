@@ -48,6 +48,8 @@ const { data: posts, error: postsError } = await supabase
   .select('id, stock_status, comment, nickname, created_at, is_visible')
   .eq('thread_id', threadId)
   .order('created_at', { ascending: false });
+  console.log('posts', posts);
+  
   if (postsError) {
   console.error(postsError);
 }
