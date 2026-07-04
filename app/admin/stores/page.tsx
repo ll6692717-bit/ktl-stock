@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-import PrefectureAccordion from './PrefectureAccordion';
+import AdminGuard from '@/app/components/AdminGuard';
+import SiteHeader from '@/app/components/SiteHeader';
+import SiteFooter from '@/app/components/SiteFooter';
 
 const prefectures = [
   '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
