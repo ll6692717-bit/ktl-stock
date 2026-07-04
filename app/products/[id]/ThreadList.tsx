@@ -79,17 +79,18 @@ export default function ThreadList({
     }
   }
 
-  function formatDate(dateText: string | null) {
-    if (!dateText) return '未更新';
+function formatDate(dateText: string | null) {
+  if (!dateText) return '未更新';
 
-    return new Date(dateText).toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
+  return new Date(dateText).toLocaleString('ja-JP', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
   return (
     <>
