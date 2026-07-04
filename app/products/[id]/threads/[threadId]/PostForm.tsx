@@ -39,7 +39,7 @@ export default function PostForm({ threadId }: { threadId: string }) {
     }
 
     setComment('');
-    setMessage('投稿しました。');
+    setMessage('投稿しました。更新すると反映されます。');
 
     router.refresh();
   }
