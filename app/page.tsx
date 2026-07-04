@@ -1,4 +1,3 @@
-import AdminMenu from './AdminMenu';
 import { supabase } from '@/lib/supabase';
 import SiteHeader from '@/app/components/SiteHeader';
 import SiteFooter from '@/app/components/SiteFooter';
