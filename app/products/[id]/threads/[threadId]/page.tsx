@@ -7,6 +7,7 @@ import PostForm from './PostForm';
 
 function formatDate(dateText: string) {
   return new Date(dateText).toLocaleString('ja-JP', {
+    timeZone: 'Asia/Tokyo',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
