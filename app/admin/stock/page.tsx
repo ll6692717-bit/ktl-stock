@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-import CommentList from './CommentList';
+import AdminGuard from '@/app/components/AdminGuard';
+import SiteHeader from '@/app/components/SiteHeader';
+import SiteFooter from '@/app/components/SiteFooter';
 
 export default async function CommentAdminPage() {
   const { data: comments, error } = await supabase
