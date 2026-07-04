@@ -12,6 +12,19 @@ function formatDate(dateText: string) {
   });
 }
 
+function getStatusBadge(status: string | null) {
+  switch (status) {
+    case '在庫あり':
+      return 'bg-green-700 text-white';
+    case '残りわずか':
+      return 'bg-yellow-400 text-black';
+    case '売り切れ':
+      return 'bg-[#800b0b] text-white';
+    default:
+      return 'bg-gray-300 text-gray-700';
+  }
+}
+
 export default async function ThreadDetailPage({
   params,
 }: {
@@ -120,15 +133,15 @@ export default async function ThreadDetailPage({
                       </div>
                     )}
 
-                    <p
-                      className={
-                        isLatest
-                          ? 'text-xl font-bold text-[#800b0b]'
-                          : 'font-bold text-[#800b0b]'
-                      }
-                    >
-                      {post.stock_status}
-                    </p>
+                    <div>
+                      <span
+                        className={`inline-block rounded-full px-4 py-2 text-sm font-bold ${getStatusBadge(
+                          post.stock_status
+                        )}`}
+                      >
+                        {post.stock_status || '未投稿'}
+                      </span>
+                    </div>
 
                     <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-gray-800 sm:text-base">
                       {post.comment || 'コメントなし'}
