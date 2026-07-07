@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function SiteHeader({
-  subtitle = '雑誌の在庫状況をみんなで共有しよう！',
+  subtitle = '当サイトはKEY TO LITの非公式ファンサイトです。所属事務所・出版社・販売店とは関係ありません。',
 }: {
   subtitle?: string;
 }) {
