@@ -28,7 +28,7 @@ export default function SiteHeader({
     <header className="bg-[#800b0b] px-4 py-5 text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">奇天烈軍 販売状況共有</h1>
+          <h1 className="text-3xl font-bold">🗝 販売状況共有</h1>
           <p className="mt-2 text-sm">{subtitle}</p>
         </div>
 
