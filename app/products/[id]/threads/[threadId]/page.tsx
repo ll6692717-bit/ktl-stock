@@ -61,7 +61,7 @@ const { data: posts, error: postsError } = await supabase
         <header className="bg-[#800b0b] px-4 py-5 text-white">
           <div className="mx-auto max-w-6xl">
             <h1 className="text-2xl font-bold sm:text-3xl">
-              奇天烈軍 販売状況共有
+              🗝🔥 販売状況共有
             </h1>
           </div>
         </header>
@@ -89,7 +89,7 @@ const { data: posts, error: postsError } = await supabase
       <header className="bg-[#800b0b] px-4 py-5 text-white">
         <div className="mx-auto max-w-6xl">
           <h1 className="text-2xl font-bold sm:text-3xl">
-            奇天烈軍 販売状況共有
+            🗝🔥 販売状況共有
           </h1>
           <p className="mt-2 text-sm">
             店舗ごとの在庫情報を投稿・確認できます。投稿後、リロードしてください。
@@ -156,7 +156,7 @@ const { data: posts, error: postsError } = await supabase
                     </p>
 
                     <div className="mt-3 rounded bg-white p-3 text-xs leading-6 text-gray-500 sm:text-sm">
-                      <p>投稿者：{post.nickname || '奇天烈軍'}</p>
+                      <p>投稿者：{post.nickname || 'KTL'}</p>
                       <p>投稿日時：{formatDate(post.created_at)}</p>
                     </div>
                   </div>
@@ -172,7 +172,7 @@ const { data: posts, error: postsError } = await supabase
       </div>
 
       <footer className="mt-10 bg-[#800b0b] px-4 py-5 text-center text-sm text-white">
-        © 奇天烈軍 販売状況共有
+        © 🗝🔥 販売状況共有
       </footer>
     </main>
   );
