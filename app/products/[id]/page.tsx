@@ -31,9 +31,9 @@ export default async function ProductDetail({
     <main className="min-h-screen bg-white">
       <header className="bg-[#800b0b] px-4 py-5 text-white">
         <div className="mx-auto max-w-6xl">
-          <h1 className="text-3xl font-bold">奇天烈軍 販売状況共有</h1>
+          <h1 className="text-3xl font-bold">🗝🔥 販売状況共有</h1>
           <p className="mt-2 text-sm">
-            KEY TO LIT関連雑誌の在庫情報を共有できます。
+            当サイトはKEY TO LITの非公式ファンサイトです。所属事務所・出版社・販売店とは関係ありません。
           </p>
         </div>
       </header>
@@ -92,7 +92,7 @@ export default async function ProductDetail({
       </div>
 
       <footer className="mt-10 bg-[#800b0b] px-4 py-5 text-center text-sm text-white">
-        © 奇天烈軍 販売状況共有
+        © 🗝🔥 販売状況共有
       </footer>
     </main>
   );
