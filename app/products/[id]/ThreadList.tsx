@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-const prefectures = [
+const basePrefectures = [
   '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
   '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
   '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県',
@@ -14,7 +14,10 @@ const prefectures = [
   '沖縄県',
 ];
 
-const pinnedTitle = '★テスト★まずはここで入力練習してみてください！';
+const prefectures = basePrefectures.flatMap((prefecture) => [
+  prefecture,
+  `${prefecture}書店以外`,
+]);
 
 type Thread = {
   id: string;
@@ -42,55 +45,39 @@ export default function ThreadList({
 
     return threads.filter((thread) => {
       if (!word) return true;
-      return thread.shop_name.toLowerCase().includes(word);
+
+      return (
+        thread.shop_name.toLowerCase().includes(word) ||
+        (thread.prefecture || '').toLowerCase().includes(word)
+      );
     });
   }, [threads, keyword]);
-
-  const pinnedThread = filteredThreads.find(
-    (thread) => thread.shop_name === pinnedTitle
-  );
-
-  const normalThreads = filteredThreads.filter(
-    (thread) => thread.shop_name !== pinnedTitle
-  );
 
   function getStatusInfo(status: string | null) {
     switch (status) {
       case '在庫あり':
-        return {
-          label: '🟢 在庫あり',
-          className: 'bg-green-700 text-white',
-        };
+        return { label: '🟢 在庫あり', className: 'bg-green-700 text-white' };
       case '残りわずか':
-        return {
-          label: '🟡 残りわずか',
-          className: 'bg-yellow-400 text-black',
-        };
+        return { label: '🟡 残りわずか', className: 'bg-yellow-400 text-black' };
       case '売り切れ':
-        return {
-          label: '🔴 売り切れ',
-          className: 'bg-[#800b0b] text-white',
-        };
+        return { label: '🔴 売り切れ', className: 'bg-[#800b0b] text-white' };
       default:
-        return {
-          label: '⚪ 未投稿',
-          className: 'bg-gray-300 text-gray-700',
-        };
+        return { label: '⚪ 未投稿', className: 'bg-gray-300 text-gray-700' };
     }
   }
 
-function formatDate(dateText: string | null) {
-  if (!dateText) return '未更新';
+  function formatDate(dateText: string | null) {
+    if (!dateText) return '未更新';
 
-  return new Date(dateText).toLocaleString('ja-JP', {
-    timeZone: 'Asia/Tokyo',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+    return new Date(dateText).toLocaleString('ja-JP', {
+      timeZone: 'Asia/Tokyo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 
   return (
     <>
@@ -102,29 +89,10 @@ function formatDate(dateText: string | null) {
           type="text"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          placeholder="例：タワーレコード"
+          placeholder="例：タワーレコード / コンビニ / 北海道"
           className="w-full rounded border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-400"
         />
       </div>
-
-      {pinnedThread && (
-        <div className="mb-5 rounded-xl border-2 border-[#800b0b] bg-white p-5 shadow">
-          <h3 className="text-xl font-bold text-[#800b0b]">
-            {pinnedThread.shop_name}
-          </h3>
-
-          <p className="mt-2 text-sm text-gray-600">
-            入力練習用のスレッドです。
-          </p>
-
-          <a
-            href={`/products/${productId}/threads/${pinnedThread.id}`}
-            className="mt-3 inline-block rounded bg-[#800b0b] px-4 py-2 text-sm font-bold text-white"
-          >
-            投稿する・過去の投稿を見る →
-          </a>
-        </div>
-      )}
 
       <div className="mb-5 rounded-xl border border-gray-200 bg-[#fff8f8] p-5 shadow-sm">
         <h3 className="text-xl font-bold text-[#800b0b]">
@@ -133,7 +101,7 @@ function formatDate(dateText: string | null) {
 
         <p className="mt-2 text-sm leading-6 text-gray-700">
           探している販売店舗がまだ一覧にない場合は、こちらから追加してください。
-          追加された店舗には、他の方も在庫情報を投稿できるようになります。
+          書店以外の場合は「○○県書店以外」を選んで追加できます。
         </p>
 
         <a
@@ -146,11 +114,12 @@ function formatDate(dateText: string | null) {
 
       <div className="space-y-3">
         {prefectures.map((prefecture) => {
-          const prefectureThreads = normalThreads.filter(
+          const prefectureThreads = filteredThreads.filter(
             (thread) => thread.prefecture === prefecture
           );
 
-          const isOpen = openPrefecture === prefecture;
+          const isOpen =
+            openPrefecture === prefecture || keyword.trim().length > 0;
 
           return (
             <section
@@ -247,4 +216,5 @@ function formatDate(dateText: string | null) {
       </div>
     </>
   );
+}
 }
