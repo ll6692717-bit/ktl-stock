@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 type Thread = {
@@ -9,12 +9,14 @@ type Thread = {
   prefecture: string;
   store_name: string;
   stock_status: string;
-  comment: string | null;
-  created_at: string;
+  comment?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
 type ThreadListProps = {
   productId: string;
+  threads: Thread[];
 };
 
 const prefectures = [
@@ -28,8 +30,7 @@ const prefectures = [
   '福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県',
 ];
 
-export default function ThreadList({ productId }: ThreadListProps) {
-  const [threads, setThreads] = useState<Thread[]>([]);
+export default function ThreadList({ productId, threads }: ThreadListProps) {
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [search, setSearch] = useState('');
 
@@ -39,25 +40,6 @@ export default function ThreadList({ productId }: ThreadListProps) {
   const [comment, setComment] = useState('');
   const [isNonBookstore, setIsNonBookstore] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const fetchThreads = async () => {
-    const { data, error } = await supabase
-      .from('threads')
-      .select('*')
-      .eq('product_id', productId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setThreads((data || []) as Thread[]);
-  };
-
-  useEffect(() => {
-    fetchThreads();
-  }, [productId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,12 +71,7 @@ export default function ThreadList({ productId }: ThreadListProps) {
       return;
     }
 
-    setPrefecture('');
-    setStoreName('');
-    setStockStatus('在庫あり');
-    setComment('');
-    setIsNonBookstore(false);
-    fetchThreads();
+    window.location.reload();
   };
 
   const groupedThreads = useMemo(() => {
@@ -117,13 +94,13 @@ export default function ThreadList({ productId }: ThreadListProps) {
       const bookstore = filtered.filter(
         (thread) =>
           thread.prefecture === pref &&
-          !thread.store_name.includes('書店以外')
+          !thread.store_name?.includes('書店以外')
       );
 
       const nonBookstore = filtered.filter(
         (thread) =>
           thread.prefecture === pref &&
-          thread.store_name.includes('書店以外')
+          thread.store_name?.includes('書店以外')
       );
 
       if (bookstore.length > 0) {
@@ -152,7 +129,7 @@ export default function ThreadList({ productId }: ThreadListProps) {
         onSubmit={handleSubmit}
         className="rounded-xl border bg-white p-4 shadow-sm space-y-4"
       >
-        <h2 className="text-lg font-bold">販売店舗を追加</h2>
+        <h2 className="text-lg font-bold text-[#800b0b]">販売店舗を追加</h2>
 
         <div className="grid gap-3 md:grid-cols-2">
           <select
@@ -207,7 +184,7 @@ export default function ThreadList({ productId }: ThreadListProps) {
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-[#800b0b] px-4 py-2 text-white disabled:opacity-50"
+          className="rounded bg-[#800b0b] px-4 py-2 font-bold text-white disabled:opacity-50"
         >
           {loading ? '投稿中...' : '追加する'}
         </button>
@@ -232,7 +209,7 @@ export default function ThreadList({ productId }: ThreadListProps) {
                 <button
                   type="button"
                   onClick={() => toggleGroup(groupName)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left font-bold"
+                  className="flex w-full items-center justify-between px-4 py-3 text-left font-bold text-[#800b0b]"
                 >
                   <span>
                     {groupName}（{items.length}件）
@@ -248,17 +225,22 @@ export default function ThreadList({ productId }: ThreadListProps) {
                         className="rounded-lg bg-gray-50 p-3 text-sm"
                       >
                         <div className="font-bold">{thread.store_name}</div>
+
                         <div className="mt-1">
                           在庫状況：{thread.stock_status}
                         </div>
+
                         {thread.comment && (
                           <div className="mt-1 whitespace-pre-wrap">
                             {thread.comment}
                           </div>
                         )}
+
                         <div className="mt-2 text-xs text-gray-500">
-                          投稿日：
-                          {new Date(thread.created_at).toLocaleString('ja-JP')}
+                          最終更新：
+                          {new Date(
+                            thread.updated_at || thread.created_at || ''
+                          ).toLocaleString('ja-JP')}
                         </div>
                       </div>
                     ))}
