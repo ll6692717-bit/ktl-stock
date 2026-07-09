@@ -4,14 +4,7 @@ import { useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 type Thread = {
-  id: string;
-  product_id: string;
-  prefecture: string;
-  store_name: string;
-  stock_status: string;
-  comment?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  [key: string]: any;
 };
 
 type ThreadListProps = {
@@ -30,6 +23,34 @@ const prefectures = [
   '福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県',
 ];
 
+function getComment(thread: Thread) {
+  return (
+    thread.comment ||
+    thread.latest_comment ||
+    thread.last_comment ||
+    thread.content ||
+    thread.body ||
+    ''
+  );
+}
+
+function getDate(thread: Thread) {
+  return thread.updated_at || thread.created_at || thread.last_posted_at || '';
+}
+
+function isNonBookstore(thread: Thread) {
+  const storeName = thread.store_name || '';
+  const category = thread.category || '';
+  const placeType = thread.place_type || '';
+
+  return (
+    storeName.includes('書店以外') ||
+    category.includes('書店以外') ||
+    placeType.includes('書店以外') ||
+    thread.is_non_bookstore === true
+  );
+}
+
 export default function ThreadList({ productId, threads }: ThreadListProps) {
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [search, setSearch] = useState('');
@@ -38,30 +59,76 @@ export default function ThreadList({ productId, threads }: ThreadListProps) {
   const [storeName, setStoreName] = useState('');
   const [stockStatus, setStockStatus] = useState('在庫あり');
   const [comment, setComment] = useState('');
-  const [isNonBookstore, setIsNonBookstore] = useState(false);
+  const [isOther, setIsOther] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const groupedThreads = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    const groups: Record<string, Thread[]> = {};
+
+    const filtered = threads.filter((thread) => {
+      if (!keyword) return true;
+
+      const text = [
+        thread.prefecture,
+        thread.store_name,
+        thread.stock_status,
+        getComment(thread),
+      ]
+        .join(' ')
+        .toLowerCase();
+
+      return text.includes(keyword);
+    });
+
+    prefectures.forEach((pref) => {
+      const normalItems = filtered.filter(
+        (thread) => thread.prefecture === pref && !isNonBookstore(thread)
+      );
+
+      const otherItems = filtered.filter(
+        (thread) => thread.prefecture === pref && isNonBookstore(thread)
+      );
+
+      if (normalItems.length > 0) {
+        groups[pref] = normalItems;
+      }
+
+      if (otherItems.length > 0) {
+        groups[`${pref}書店以外`] = otherItems;
+      }
+    });
+
+    return groups;
+  }, [threads, search]);
+
+  const toggleGroup = (name: string) => {
+    setOpenGroups((prev) =>
+      prev.includes(name)
+        ? prev.filter((item) => item !== name)
+        : [...prev, name]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!prefecture || !storeName || !stockStatus) {
-      alert('都道府県・店舗名・在庫状況を入力してください。');
+    if (!prefecture || !storeName) {
+      alert('都道府県と店舗名を入力してください。');
       return;
     }
 
     setLoading(true);
 
-    const finalStoreName = isNonBookstore
-      ? `${storeName}（書店以外）`
-      : storeName;
-
-    const { error } = await supabase.from('threads').insert({
+    const insertData: any = {
       product_id: productId,
       prefecture,
-      store_name: finalStoreName,
+      store_name: isOther ? `${storeName}（書店以外）` : storeName,
       stock_status: stockStatus,
       comment,
-    });
+    };
+
+    const { error } = await supabase.from('threads').insert(insertData);
 
     setLoading(false);
 
@@ -74,68 +141,21 @@ export default function ThreadList({ productId, threads }: ThreadListProps) {
     window.location.reload();
   };
 
-  const groupedThreads = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-
-    const filtered = threads.filter((thread) => {
-      if (!keyword) return true;
-
-      return (
-        thread.store_name?.toLowerCase().includes(keyword) ||
-        thread.prefecture?.toLowerCase().includes(keyword) ||
-        thread.stock_status?.toLowerCase().includes(keyword) ||
-        thread.comment?.toLowerCase().includes(keyword)
-      );
-    });
-
-    const groups: Record<string, Thread[]> = {};
-
-    prefectures.forEach((pref) => {
-      const bookstore = filtered.filter(
-        (thread) =>
-          thread.prefecture === pref &&
-          !thread.store_name?.includes('書店以外')
-      );
-
-      const nonBookstore = filtered.filter(
-        (thread) =>
-          thread.prefecture === pref &&
-          thread.store_name?.includes('書店以外')
-      );
-
-      if (bookstore.length > 0) {
-        groups[pref] = bookstore;
-      }
-
-      if (nonBookstore.length > 0) {
-        groups[`${pref}書店以外`] = nonBookstore;
-      }
-    });
-
-    return groups;
-  }, [threads, search]);
-
-  const toggleGroup = (groupName: string) => {
-    setOpenGroups((prev) =>
-      prev.includes(groupName)
-        ? prev.filter((name) => name !== groupName)
-        : [...prev, groupName]
-    );
-  };
-
   return (
-    <div className="space-y-6">
+    <div>
       <form
         onSubmit={handleSubmit}
-        className="rounded-xl border bg-white p-4 shadow-sm space-y-4"
+        className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
       >
-        <h2 className="text-lg font-bold text-[#800b0b]">販売店舗を追加</h2>
+        <h3 className="mb-4 text-xl font-bold text-[#800b0b]">
+          販売店舗を追加
+        </h3>
 
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           <select
             value={prefecture}
             onChange={(e) => setPrefecture(e.target.value)}
-            className="w-full rounded border px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2"
           >
             <option value="">都道府県を選択</option>
             {prefectures.map((pref) => (
@@ -149,13 +169,13 @@ export default function ThreadList({ productId, threads }: ThreadListProps) {
             value={storeName}
             onChange={(e) => setStoreName(e.target.value)}
             placeholder="店舗名"
-            className="w-full rounded border px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2"
           />
 
           <select
             value={stockStatus}
             onChange={(e) => setStockStatus(e.target.value)}
-            className="w-full rounded border px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2"
           >
             <option value="在庫あり">在庫あり</option>
             <option value="残りわずか">残りわずか</option>
@@ -166,10 +186,10 @@ export default function ThreadList({ productId, threads }: ThreadListProps) {
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
-              checked={isNonBookstore}
-              onChange={(e) => setIsNonBookstore(e.target.checked)}
+              checked={isOther}
+              onChange={(e) => setIsOther(e.target.checked)}
             />
-            書店以外として追加
+            書店以外
           </label>
         </div>
 
@@ -177,14 +197,14 @@ export default function ThreadList({ productId, threads }: ThreadListProps) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="コメント"
-          className="w-full rounded border px-3 py-2"
+          className="mt-3 w-full rounded border border-gray-300 px-3 py-2"
           rows={3}
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-[#800b0b] px-4 py-2 font-bold text-white disabled:opacity-50"
+          className="mt-4 rounded bg-[#800b0b] px-5 py-2 font-bold text-white disabled:opacity-50"
         >
           {loading ? '投稿中...' : '追加する'}
         </button>
@@ -194,61 +214,71 @@ export default function ThreadList({ productId, threads }: ThreadListProps) {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="店舗名で検索"
-        className="w-full rounded border px-3 py-2"
+        className="mb-5 w-full rounded border border-gray-300 px-3 py-2"
       />
 
       <div className="space-y-3">
-        {Object.keys(groupedThreads).length === 0 ? (
-          <p className="text-sm text-gray-500">投稿はまだありません。</p>
-        ) : (
-          Object.entries(groupedThreads).map(([groupName, items]) => {
-            const isOpen = openGroups.includes(groupName);
+        {Object.entries(groupedThreads).map(([groupName, items]) => {
+          const isOpen = openGroups.includes(groupName);
 
-            return (
-              <div key={groupName} className="rounded-xl border bg-white">
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(groupName)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left font-bold text-[#800b0b]"
-                >
-                  <span>
-                    {groupName}（{items.length}件）
-                  </span>
-                  <span>{isOpen ? '−' : '＋'}</span>
-                </button>
+          return (
+            <div
+              key={groupName}
+              className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+            >
+              <button
+                type="button"
+                onClick={() => toggleGroup(groupName)}
+                className="flex w-full items-center justify-between px-4 py-3 text-left font-bold text-[#800b0b]"
+              >
+                <span>
+                  {groupName}（{items.length}件）
+                </span>
+                <span>{isOpen ? '−' : '＋'}</span>
+              </button>
 
-                {isOpen && (
-                  <div className="border-t px-4 py-3 space-y-3">
-                    {items.map((thread) => (
+              {isOpen && (
+                <div className="border-t border-gray-200">
+                  {items.map((thread) => {
+                    const commentText = getComment(thread);
+                    const dateText = getDate(thread);
+
+                    return (
                       <div
                         key={thread.id}
-                        className="rounded-lg bg-gray-50 p-3 text-sm"
+                        className="border-b border-gray-100 p-4 last:border-b-0"
                       >
-                        <div className="font-bold">{thread.store_name}</div>
-
-                        <div className="mt-1">
-                          在庫状況：{thread.stock_status}
+                        <div className="font-bold text-gray-900">
+                          {thread.store_name}
                         </div>
 
-                        {thread.comment && (
-                          <div className="mt-1 whitespace-pre-wrap">
-                            {thread.comment}
+                        <div className="mt-1 text-sm text-gray-700">
+                          在庫状況：{thread.stock_status || '未登録'}
+                        </div>
+
+                        {commentText && (
+                          <div className="mt-2 whitespace-pre-wrap text-sm text-gray-700">
+                            {commentText}
                           </div>
                         )}
 
-                        <div className="mt-2 text-xs text-gray-500">
-                          最終更新：
-                          {new Date(
-                            thread.updated_at || thread.created_at || ''
-                          ).toLocaleString('ja-JP')}
-                        </div>
+                        {dateText && (
+                          <div className="mt-2 text-xs text-gray-500">
+                            最終更新：
+                            {new Date(dateText).toLocaleString('ja-JP')}
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {Object.keys(groupedThreads).length === 0 && (
+          <p className="text-sm text-gray-500">該当する投稿はありません。</p>
         )}
       </div>
     </div>
