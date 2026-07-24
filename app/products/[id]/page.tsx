@@ -47,22 +47,7 @@ export default async function ProductDetail({
         </a>
 
         <section className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-5 sm:flex-row">
-            <div className="h-64 w-40 shrink-0 overflow-hidden rounded bg-gray-100">
-              {product.cover_image_url ? (
-                <img
-                  src={product.cover_image_url}
-                  alt={product.title}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#800b0b]">
-                  IMAGE
-                </div>
-              )}
-            </div>
-
-            <div>
+                    <div>
               <h1 className="text-3xl font-bold text-[#800b0b]">
                 {product.title}
               </h1>
